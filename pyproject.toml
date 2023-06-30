@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "zhenglin"
 version = "0.13.0"
 # version = "TBD.networks_numbers.modification_numbers"
-authors = 
+authors = [
   { name="Zhenglin", email="aidenhpan@gmail.com" },
 ]
 description = "A deep-learning package contains a set of well-organized deep-neural networks&tools."
@@ -19,8 +19,8 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
-"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+"Homepage" = "https://github.com/ZhenglinPan/zhenglin-package"
+"Bug Tracker" = "https://github.com/ZhenglinPan/zhenglin-package/issues"
 
 # [project.dependencies]
 # torch = "^1.9.0"

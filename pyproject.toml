@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zhenglin"
+version = "0.13.0"
+# version = "TBD.networks_numbers.modification_numbers"
+authors = 
+  { name="Zhenglin", email="aidenhpan@gmail.com" },
+]
+description = "A deep-learning package contains a set of well-organized deep-neural networks&tools."
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/pypa/sampleproject"
+"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+
+# [project.dependencies]
+# torch = "^1.9.0"
+# torchvision = "^0.10.0"

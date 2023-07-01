@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "zhenglin"
-version = "0.13.0"
+version = "0.13.1"
 # version = "TBD.networks_numbers.modification_numbers"
 authors = [
   { name="Zhenglin", email="aidenhpan@gmail.com" },

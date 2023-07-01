@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "zhenglin"
-version = "0.13.1"
+version = "0.13.2"
 # version = "TBD.networks_numbers.modification_numbers"
 authors = [
   { name="Zhenglin", email="aidenhpan@gmail.com" },
@@ -25,3 +25,8 @@ classifiers = [
 # [project.dependencies]
 # torch = "^1.9.0"
 # torchvision = "^0.10.0"
+
+# python -m build
+# py -m twine upload --repository pypi dist/*
+# user name: __token__
+# password: <API token>

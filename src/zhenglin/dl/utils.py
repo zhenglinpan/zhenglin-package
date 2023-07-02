@@ -7,3 +7,11 @@ def summary(model):
         parameter_number += torch.prod(torch.tensor(layer.size()))
     print('Total Parameter numbers:{:,}'.format(int(parameter_number)))
 
+
+def fix_model(model):
+    for param in model.parameters():
+        param.requires_grad = False
+
+    model.eval()
+    
+    return model

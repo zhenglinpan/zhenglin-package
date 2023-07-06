@@ -25,10 +25,11 @@ class MeanShift(nn.Conv2d):
             p.requires_grad = False
 
 
-class PerceptualLoss_l1(nn.Module):
-    def __init__(self, rgb_range=1, device=0):
-        super(PerceptualLoss_l1, self).__init__()
+class PerceptualLoss(nn.Module):
+    def __init__(self, criterion='l1', rgb_range=1, device=torch.device(0)):
+        super(PerceptualLoss, self).__init__()
         self.device = device
+        self.criterion = criterion
         model = models.vgg19(weights='IMAGENET1K_V1').to(self.device)
         vgg_features = model.features
         modules = [m for m in vgg_features]
@@ -55,6 +56,12 @@ class PerceptualLoss_l1(nn.Module):
         vgg_sr = _forward(sr)
         with torch.no_grad():
             vgg_hr = _forward(hr).detach()
-        loss = F.l1_loss(vgg_sr, vgg_hr)
-        # loss = F.mse_loss(vgg_sr, vgg_hr)
+            
+        if self.criterion.lower() == 'l1':
+            loss = F.l1_loss(vgg_sr, vgg_hr)
+        elif self.criterion.lower() == 'l2' or self.criterion.lower() == 'mse':
+            loss = F.mse_loss(vgg_sr, vgg_hr)
+        else:
+            raise NotImplementedError('Loss type {} is not implemented'.format(self.criterion))
+        
         return loss

@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from utils.img_utils import denorm_min_max, norm_mean,denorm_mean, norm_min_max, gamma_correction
 from skimage.metrics import structural_similarity
 from skimage.transform import resize
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.image.fid import FrechetInceptionDistance
 from collections import OrderedDict
+from .utils import norm_min_max
 
 def SNR(original:np.ndarray, generated):
     snr = 0

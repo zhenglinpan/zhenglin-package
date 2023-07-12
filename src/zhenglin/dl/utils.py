@@ -1,5 +1,5 @@
 import torch
-from networks.cyclegan import ReplayBuffer as ReplayBuffer_
+from .networks.cyclegan import ReplayBuffer as ReplayBuffer_
 import numpy as np
 import copy
 
@@ -40,9 +40,9 @@ class EasyReplayBuffer:
             self.data.append(data)
         return self.data[-1]
     
-    def peek(self):
+    def rand_pick(self):
         assert len(self.data) != 0
-        return self.data[0]
+        return np.random.choice(self.data)
 
 
 def norm_min_max(img_in, norm_type=None, perc_min = 0.01, perc_max = 0.99, min_ = -80000., max_ = 80000.,cut_off=True): 

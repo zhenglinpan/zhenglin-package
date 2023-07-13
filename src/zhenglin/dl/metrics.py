@@ -7,6 +7,8 @@ from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.image.fid import FrechetInceptionDistance
 from collections import OrderedDict
 from .utils import norm_min_max
+from PIL import Image
+import imagehash
 
 def SNR(original:np.ndarray, generated):
     snr = 0
@@ -34,6 +36,9 @@ def PSNR(original:np.ndarray, generated:np.ndarray):
     return psnr / ch
 
 def SSIM(mat1:np.ndarray, mat2:np.ndarray):
+    assert mat1.shape == mat2.shape
+    assert len(mat1.shape) == 3
+    
     mat1 = np.array(norm_min_max(mat1, norm_type='self')[0]*255).astype(np.uint8)
     mat2 = np.array(norm_min_max(mat2, norm_type='self')[0]*255).astype(np.uint8)
     
@@ -84,3 +89,26 @@ def LPIPS(mat1:np.ndarray, mat2:np.ndarray):
     
         score += float(lpips(m1_3c, m2_3c))
     return score / ch
+
+def perceptive_hash(mat1:np.ndarray, mat2:np.ndarray):
+    assert mat1.shape == mat2.shape
+    assert len(mat1.shape) == 3
+    
+    mat1 = np.array(norm_min_max(mat1, norm_type='self')[0]*255).astype(np.uint8)
+    mat2 = np.array(norm_min_max(mat2, norm_type='self')[0]*255).astype(np.uint8)
+    
+    ch = mat1.shape[0]
+    diff = 0
+    for c in range(ch):
+        m1 = resize(mat1[c], (32, 32), mode='reflect', anti_aliasing=True)
+        m2 = resize(mat2[c], (32, 32), mode='reflect', anti_aliasing=True)
+
+        m1 = Image.fromarray((m1 * 255).astype(np.uint8))
+        m2 = Image.fromarray((m2 * 255).astype(np.uint8))
+        
+        hash1 = imagehash.phash(m1)
+        hash2 = imagehash.phash(m2)
+        
+        diff += hash1 - hash2
+        
+    return diff / ch

@@ -26,11 +26,10 @@ class MeanShift(nn.Conv2d):
 
 
 class PerceptualLoss(nn.Module):
-    def __init__(self, criterion='l1', rgb_range=1, device=torch.device(0)):
+    def __init__(self, criterion='l1', rgb_range=1):
         super(PerceptualLoss, self).__init__()
-        self.device = device
         self.criterion = criterion
-        model = models.vgg19(weights='IMAGENET1K_V1').to(self.device)
+        model = models.vgg19(weights='IMAGENET1K_V1')
         vgg_features = model.features
         modules = [m for m in vgg_features]
 
@@ -39,14 +38,13 @@ class PerceptualLoss(nn.Module):
         vgg_mean = (0.2, 0.2, 0.2)
         vgg_std = (0.157 * rgb_range, 0.157 * rgb_range, 0.157 * rgb_range)
         self.sub_mean = MeanShift(rgb_range, vgg_mean, vgg_std)
-        self.to(self.device)
 
         for p in self.parameters():
             p.requires_grad = False
 
     def forward(self, hr, sr):
-        sr = torch.cat([sr, sr, sr], axis=1).to(self.device)
-        hr = torch.cat([hr, hr, hr], axis=1).to(self.device)
+        sr = torch.cat([sr, sr, sr], axis=1)
+        hr = torch.cat([hr, hr, hr], axis=1)
 
         def _forward(x):
             x = self.sub_mean(x)
@@ -55,7 +53,7 @@ class PerceptualLoss(nn.Module):
 
         vgg_sr = _forward(sr)
         with torch.no_grad():
-            vgg_hr = _forward(hr).detach()
+            vgg_hr = _forward(hr)
             
         if self.criterion.lower() == 'l1':
             loss = F.l1_loss(vgg_sr, vgg_hr)

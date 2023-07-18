@@ -1,6 +1,6 @@
 # pip install zhenglin
 *@ Author: zhenglin*
-*@version: 0.13.2*
+*@version: 0.15.10*
 
 This package contains some off-the-shelves deep-learning networks implemented with [![](https://img.shields.io/badge/Pytorch-ee4c2c?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/).
 
@@ -17,10 +17,11 @@ Specifically, this package provides
 + A universal structure under `zhenglin.dl.template.v1.*`
 + Loss functions under `zhenglin.dl.losses`
 + Metrics under `zhenglin.dl.metrics`
-+ 13 highly modular and easy-to-use implementation of deep-learning networks under `zhenglin.dl.networks.*`
++ 15 highly modular and easy-to-use implementation of deep-learning networks under `zhenglin.dl.networks.*`
 which includes(from a to z)
 - [cycleGAN](https://github.com/aitorzip/PyTorch-CycleGAN)
 - [DDPM](https://github.com/dome272/Diffusion-Models-pytorch)
+- [DeblurGAN](https://github.com/fourson/DeblurGAN-pytorch/tree/master)
 - [EDSR](https://github.com/twtygqyy/pytorch-edsr/blob/master/edsr.py)
 - [ESRGAN](https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/esrgan/esrgan.py)
 - [Noise2Void](https://github.com/JohnYKiyo/Noise2Void/blob/master/02_training_test_Noise2Void.ipynb)
@@ -28,6 +29,7 @@ which includes(from a to z)
 - [RCAN](https://github.com/yjn870/RCAN-pytorch)
 - [Restormer](https://github.com/leftthomas/Restormer)
 - RRDBNet
+- [SRDRM](https://github.com/xahidbuffon/SRDRM/tree/master)
 - SRGAN
 - [SWinIR](https://github.com/JingyunLiang/SwinIR)
 - U2Net

@@ -3,7 +3,7 @@ import numpy as np
 import copy
 
 from .networks.cyclegan import ReplayBuffer
-from .networks.cyclegan import LambdaLR
+from .networks.cyclegan import LinearLambdaLR
 from .networks.cyclegan import weights_init_normal
 
 

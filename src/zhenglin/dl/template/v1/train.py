@@ -13,55 +13,56 @@ from PIL import Image
 
 from network import Generator
 from dataset import MyDataset
-from utils import weights_init_normal, LambdaLR
+from utils import weights_init_normal, LinearLambdaLR
 
 import wandb
 # wandb.init("")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--start_epoch', type=int, default=0, help='starting epoch')
-parser.add_argument('--end_epoch', type=int, default=200, help='number of epochs of training')
-parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
+### dataset args
 parser.add_argument('--dataroot', type=str, default='', help='root directory of the dataset')
-parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
-parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
-parser.add_argument('--size', type=int, default=256, help='size of the data crop (squared assumed)')
+parser.add_argument('--patch_size', type=int, default=256, help='size of the data crop (squared assumed)')
 parser.add_argument('--input_nc', type=int, default=3, help='number of channels of input data')
 parser.add_argument('--output_nc', type=int, default=3, help='number of channels of output data')
-parser.add_argument('--n_cpu', type=int, default=8, help='number of cpu threads to use during batch generation')
+parser.add_argument('--num_workers', type=int, default=8, help='number of cpu threads to use during batch generation')
+### training args
+parser.add_argument('--start_epoch', type=int, default=0, help='starting epoch')
+parser.add_argument('--end_epoch', type=int, default=200, help='number of epochs of training')
+parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
+parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
+parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--resume', action="store_true", help='continue training from a checkpoint')
 args = parser.parse_args()
-print(args)
 
-# set gpu device
+### set gpu device
 DEVICE = 0
 
-# Networks
+### Networks
 model = Generator().to(DEVICE)
 model.apply(weights_init_normal)
 
 if args.resume:
     model.load_state_dict(torch.load('./models/model_20.pth', map_location=DEVICE))
 
-# if rich
+### if rich
 # model = nn.DataParallel(model, device_ids=[0, 1])
 
-# Lossess
+### Lossess
 criterion_GAN = torch.nn.MSELoss()
 
-# argsimizers & LR schedulers
+### argsimizers & LR schedulers
 optimizer_G = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
-lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LambdaLR(args.n_epochs, args.epoch, args.decay_epoch).step)
+lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LinearLambdaLR(args.start_epoch, args.end_epoch, args.decay_epoch).step)
 
-# Inputs & targets memory allocation
+### Inputs & targets memory allocation
 Tensor = torch.cuda.FloatTensor if args.cuda else torch.Tensor
 input_A = Tensor(args.batch_size, args.input_nc, args.size, args.size)
 input_B = Tensor(args.batch_size, args.output_nc, args.size, args.size)
 target_real = Variable(Tensor(args.batch_size).fill_(1.0), requires_grad=False)
 target_fake = Variable(Tensor(args.batch_size).fill_(0.0), requires_grad=False)
 
-# Dataset loader
+### Dataset loader
 transforms_ = [ transforms.Resize(int(args.size*1.12), Image.BICUBIC), 
                 transforms.RandomCrop(args.size), 
                 transforms.RandomHorizontalFlip(),
@@ -74,7 +75,8 @@ dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_w
 for epoch in range(args.start_epoch, args.end_epoch + 1):
     for i, batch in enumerate(dataloader):
 
-        Input = Variable(input_A.copy_(batch))
+        # Input = Variable(input_A.copy_(batch))    ### style 1
+        Input = Variable(batch.type(Tensor)).to(DEVICE)   ### style 2
 
         ###### Generators A2B and B2A ######
         optimizer_G.zero_grad()

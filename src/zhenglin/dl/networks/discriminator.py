@@ -35,5 +35,5 @@ class Discriminator(nn.Module):
 
         self.model = nn.Sequential(*layers)
 
-    def forward(self, img):
-        return self.model(img)
+    def forward(self, x):
+        return self.model(x)

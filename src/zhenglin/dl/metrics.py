@@ -36,6 +36,9 @@ def PSNR(original:np.ndarray, generated:np.ndarray):
     return psnr / ch
 
 def SSIM(mat1:np.ndarray, mat2:np.ndarray):
+    """
+        mat1, mat2: np.ndarray size([c, h, w])
+    """
     assert mat1.shape == mat2.shape
     assert len(mat1.shape) == 3
     

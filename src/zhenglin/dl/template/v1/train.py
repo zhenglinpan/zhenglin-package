@@ -42,13 +42,13 @@ model = Generator().to(DEVICE)
 model.apply(weights_init_normal)
 
 if args.resume:
-    model.load_state_dict(torch.load('./models/model_20.pth', map_location=DEVICE))
+    model.load_state_dict(torch.load('./models/model_20.pth', map_location=torch.device(DEVICE)))
 
 ### if rich
 # model = nn.DataParallel(model, device_ids=[0, 1])
 
 ### Lossess
-criterion_GAN = torch.nn.MSELoss()
+criterion_GAN = torch.nn.MSELoss().to(DEVICE)
 
 ### argsimizers & LR schedulers
 optimizer_G = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999))
@@ -81,7 +81,7 @@ for epoch in range(args.start_epoch, args.end_epoch + 1):
         ###### Generators A2B and B2A ######
         optimizer_G.zero_grad()
         
-        Pred = model(Input).detach()
+        Pred = model(Input)
         
         loss_G = criterion_GAN(Input, Pred)
 

@@ -9,23 +9,26 @@ from collections import OrderedDict
 from .utils import norm_min_max
 from PIL import Image
 import imagehash
+import matplotlib.pyplot as plt
 
 def SNR(original:np.ndarray, generated):
     snr = 0
-    ch = original.shape[0]
-    for c in range(ch):
+    for c in range(ch := original.shape[0]):
         noise = original[c] - generated[c]
         snr += 10 * np.log10(np.sum(original**2) / np.sum(noise**2))
     return snr / ch
 
-def PSNR(original:np.ndarray, generated:np.ndarray):
-    original = np.array(norm_min_max(original, norm_type='self')[0]*255).astype(np.uint8)
-    generated = np.array(norm_min_max(generated, norm_type='self')[0]*255).astype(np.uint8)
-    if original.shape != generated.shape:
-        raise Exception("Two inputs different in shapes.")
+def PSNR(original:np.ndarray, generated:np.ndarray, norm=False, aclr_factor=1):
+    if norm:
+        original = np.array(norm_min_max(original, norm_type='self')[0]*255).astype(np.uint8)
+        generated = np.array(norm_min_max(generated, norm_type='self')[0]*255).astype(np.uint8)
+    
+    assert original.shape == generated.shape
+    
+    generated = generated * aclr_factor
+    
     psnr = 0
-    ch = original.shape[0]
-    for c in range(ch):
+    for c in range(ch := original.shape[0]):
         ori = original[c]
         gen = generated[c]
         mse = np.mean((ori - gen) ** 2)
@@ -35,74 +38,84 @@ def PSNR(original:np.ndarray, generated:np.ndarray):
         psnr += 20 * np.log10(max_pixel / np.sqrt(mse))
     return psnr / ch
 
-def SSIM(mat1:np.ndarray, mat2:np.ndarray):
+def SSIM(mat1:np.ndarray, mat2:np.ndarray, norm=True):
     """
-        mat1, mat2: np.ndarray size([c, h, w])
+        :mat1, mat2 paras: np.ndarray, shape=(ch, h, w)
+        :norm_type para: 'self' or 'cross'. If 'self' is used, will be insensitive to pixel value range.
+                        if 'cross' is used, mat1 should be the higher one in terms of pixel value range.
     """
-    assert mat1.shape == mat2.shape
-    assert len(mat1.shape) == 3
+    assert len(mat1.shape) == len(mat2.shape) == 3
     
-    mat1 = np.array(norm_min_max(mat1, norm_type='self')[0]*255).astype(np.uint8)
-    mat2 = np.array(norm_min_max(mat2, norm_type='self')[0]*255).astype(np.uint8)
+    if norm:
+        mat1 = np.array(norm_min_max(mat1, norm_type='self')[0]*255).astype(np.uint8)
+        mat2 = np.array(norm_min_max(mat2, norm_type='self')[0]*255).astype(np.uint8)
     
-    ch = mat1.shape[0]
-    if mat1.shape[0] != mat2.shape[0] or mat1.shape[1] != mat2.shape[1] or mat1.shape[2] != mat2.shape[2]:
-        return 0
+    mat1 = mat1.astype(np.uint8)
+    mat2 = mat2.astype(np.uint8)
+    
     ssim = 0
-    for c in range(ch):
+    for c in range(ch := mat1.shape[0]):
         ssim += structural_similarity(mat1[c], mat2[c])
     return ssim / ch
 
-def FID(original:np.ndarray, generated:np.ndarray):
-    original = np.array(norm_min_max(original, norm_type='self')[0]*255)
-    generated = np.array(norm_min_max(generated, norm_type='self')[0]*255)
-
-    score = 0
-    ch = 2
-    ori = original[:, None, ...]  # size[2, 1, 1024, 256]
-    gen = generated[:, None, ...]
-
-    ori = resize(ori, (2, 1, 299, 299)).astype(np.uint8)
-    gen = resize(gen, (2, 1, 299, 299)).astype(np.uint8)
-
-    ori_3c = torch.tensor(np.concatenate((ori, ori, ori), axis=1))  # size[2, 3, 1024, 256]
-    gen_3c = torch.tensor(np.concatenate((gen, gen, gen), axis=1))
+def FID(real:np.ndarray, fake:np.ndarray, norm=True):
+    """
+        :real, fake para: np.ndarray, shape=(n, 1, h, w), should be a batch(n>1) of pictures
+    """
+    assert len(real.shape) == len(fake.shape) == 4
+    if norm:
+        for i in range(n := real.shape[0]):
+            real[i] = np.array(norm_min_max(real[i], norm_type='self')[0]*255).astype(np.uint8)
+            fake[i] = np.array(norm_min_max(fake[i], norm_type='self')[0]*255).astype(np.uint8)
+        
+    real = real.astype(np.uint8)
+    fake = fake.astype(np.uint8)
+    
+    real_3c = torch.tensor(np.concatenate((real, real, real), axis=1))  # size[patch_num, 3, 299, 299]
+    fake_3c = torch.tensor(np.concatenate((fake, fake, fake), axis=1))
     
     fid = FrechetInceptionDistance(feature=64)  
-    fid.update(ori_3c, real=True)
-    fid.update(gen_3c, real=False)
-    score += float(fid.compute())   # error occurs when batch == 1
-    return score / ch
+    fid.update(real_3c, real=True)
+    fid.update(fake_3c, real=False)
+    fid_score = float(fid.compute())   # error occurs when batch == 1
+    return fid_score / n
 
-def LPIPS(mat1:np.ndarray, mat2:np.ndarray):
-    mat1, _, _ = norm_min_max(mat1, norm_type='self')
-    mat2, _, _ = norm_min_max(mat2, norm_type='self')
-    mat1 = mat1 * 2 - 1
-    mat2 = mat2 * 2 - 1
+def LPIPS(real:np.ndarray, fake:np.ndarray, norm=True):
+    """
+        :real, fake para: np.ndarray, shape=(n, 1, h, w), should be a batch(n>1) of pictures
+    """
+    assert len(real.shape) == len(fake.shape) == 4
     
-    score = 0
-    ch = mat1.shape[0]
+    real = real.astype(np.float32)
+    fake = fake.astype(np.float32)
+    
+    if norm:
+        for i in range(n := real.shape[0]):
+            real[i] = np.array(norm_min_max(real[i], norm_type='self')[0]).astype(np.float32)
+            fake[i] = np.array(norm_min_max(fake[i], norm_type='self')[0]).astype(np.float32)
+    
     lpips = LearnedPerceptualImagePatchSimilarity(net_type='vgg')
-    for c in range(ch):
-        m1 = mat1[c][None, :, :]
-        m2 = mat2[c][None, :, :]
-        
-        m1_3c = torch.tensor(np.concatenate((m1, m1, m1), axis=0)[None, ...].astype(np.float32))
-        m2_3c = torch.tensor(np.concatenate((m2, m2, m2), axis=0)[None, ...].astype(np.float32))
+    real_3c = torch.tensor(np.concatenate((real, real, real), axis=1))
+    fake_3c = torch.tensor(np.concatenate((fake, fake, fake), axis=1))
+    print(real_3c.shape, real_3c.dtype)
     
-        score += float(lpips(m1_3c, m2_3c))
-    return score / ch
+    lpips_score = float(lpips(real_3c, fake_3c))
+    return lpips_score / n
 
-def perceptive_hash(mat1:np.ndarray, mat2:np.ndarray):
+def perceptive_hash(mat1:np.ndarray, mat2:np.ndarray, norm=True):
+    """
+        :norm_type para: 'self' or 'cross'. If 'self' is used, will be insensitive to pixel value range.
+                        if 'cross' is used, mat1 should be the higher one in terms of pixel value range.
+    """
     assert mat1.shape == mat2.shape
     assert len(mat1.shape) == 3
+
+    if norm:
+        mat1 = np.array(norm_min_max(mat1, norm_type='self')[0]*255).astype(np.uint8)
+        mat2 = np.array(norm_min_max(mat2, norm_type='self')[0]*255).astype(np.uint8)
     
-    mat1 = np.array(norm_min_max(mat1, norm_type='self')[0]*255).astype(np.uint8)
-    mat2 = np.array(norm_min_max(mat2, norm_type='self')[0]*255).astype(np.uint8)
-    
-    ch = mat1.shape[0]
     diff = 0
-    for c in range(ch):
+    for c in range(ch := mat1.shape[0]):
         m1 = resize(mat1[c], (32, 32), mode='reflect', anti_aliasing=True)
         m2 = resize(mat2[c], (32, 32), mode='reflect', anti_aliasing=True)
 

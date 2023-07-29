@@ -1,3 +1,10 @@
+"""
+Use *import zhenglin* to import all commonly used pakages
+outside of this project. However, for safety, DON NOT use 
+*import zhenglin* with in THIS project since it goes against
+the principle of isolation and if not, could cause unexpected errors.
+"""
+
 # system packages
 import os
 import sys

@@ -1,6 +1,6 @@
 # pip install zhenglin
 *@ Author: zhenglin*
-*@version: 0.15.10*
+*@version: 0.16.13*
 
 This package contains some off-the-shelves deep-learning networks implemented with [![](https://img.shields.io/badge/Pytorch-ee4c2c?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/).
 
@@ -17,7 +17,7 @@ Specifically, this package provides
 + A universal structure under `zhenglin.dl.template.v1.*`
 + Loss functions under `zhenglin.dl.losses`
 + Metrics under `zhenglin.dl.metrics`
-+ 15 highly modular and easy-to-use implementation of deep-learning networks under `zhenglin.dl.networks.*`
++ 16 highly modular and easy-to-use implementation of deep-learning networks under `zhenglin.dl.networks.*`
 which includes(from a to z)
 - [cycleGAN](https://github.com/aitorzip/PyTorch-CycleGAN)
 - [DDPM](https://github.com/dome272/Diffusion-Models-pytorch)
@@ -27,6 +27,7 @@ which includes(from a to z)
 - [Noise2Void](https://github.com/JohnYKiyo/Noise2Void/blob/master/02_training_test_Noise2Void.ipynb)
 - [Pix2Pix](https://github.com/mrzhu-cool/pix2pix-pytorch)
 - [RCAN](https://github.com/yjn870/RCAN-pytorch)
+- ResNet
 - [Restormer](https://github.com/leftthomas/Restormer)
 - RRDBNet
 - [SRDRM](https://github.com/xahidbuffon/SRDRM/tree/master)

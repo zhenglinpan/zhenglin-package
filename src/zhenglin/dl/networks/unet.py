@@ -3,7 +3,11 @@ import torch.nn as nn
 from math import sqrt
 
 class UNet(nn.Module):
-    
+    """
+    A tity version of UNet.
+    Original UNet: depth-5, starting filtersize-64, parameters-31M
+    This UNet: depth-3, starting filtersize-32, parameters-0.5M
+    """
     def __init__(self,chan_in, chan_out, long_skip,nf=32):
         super(UNet, self).__init__()
         self.long_skip = long_skip

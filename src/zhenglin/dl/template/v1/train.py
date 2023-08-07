@@ -32,6 +32,8 @@ parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start
 parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--resume', action="store_true", help='continue training from a checkpoint')
+### advanced args
+parser.add_argument('--precision', type=str, default='fp32', choices=['fp32', 'fp16'], help='precision of model')
 args = parser.parse_args()
 
 ### set gpu device
@@ -39,6 +41,8 @@ DEVICE = 0
 
 ### Networks
 model = Generator().to(DEVICE)
+if args.precision == 'fp16':
+    model = Generator().half().to(DEVICE)
 model.apply(weights_init_normal)
 
 if args.resume:
@@ -56,7 +60,7 @@ optimizer_G = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999
 lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LinearLambdaLR(args.start_epoch, args.end_epoch, args.decay_epoch).step)
 
 ### Inputs & targets memory allocation
-Tensor = torch.cuda.FloatTensor if args.cuda else torch.Tensor
+Tensor = torch.cuda.FloatTensor if args.precision=='fp32' else torch.cuda.HalfTensor
 input_A = Tensor(args.batch_size, args.input_nc, args.size, args.size)
 input_B = Tensor(args.batch_size, args.output_nc, args.size, args.size)
 target_real = Variable(Tensor(args.batch_size).fill_(1.0), requires_grad=False)

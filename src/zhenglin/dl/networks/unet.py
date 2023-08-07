@@ -4,7 +4,7 @@ from math import sqrt
 
 class UNet(nn.Module):
     """
-    A tity version of UNet.
+    A tity version of UNet. See unet_vanilla for original one.
     Original UNet: depth-5, starting filtersize-64, parameters-31M
     This UNet: depth-3, starting filtersize-32, parameters-0.5M
     """

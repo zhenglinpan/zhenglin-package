@@ -64,7 +64,7 @@ def FID(real:np.ndarray, fake:np.ndarray, norm=True):
     """
     assert len(real.shape) == len(fake.shape) == 4
     if norm:
-        for i in range(n := real.shape[0]):
+        for i in range(real.shape[0]):
             real[i] = np.array(norm_min_max(real[i], norm_type='self')[0]*255).astype(np.uint8)
             fake[i] = np.array(norm_min_max(fake[i], norm_type='self')[0]*255).astype(np.uint8)
         
@@ -78,7 +78,7 @@ def FID(real:np.ndarray, fake:np.ndarray, norm=True):
     fid.update(real_3c, real=True)
     fid.update(fake_3c, real=False)
     fid_score = float(fid.compute())   # error occurs when batch == 1
-    return fid_score / n
+    return fid_score
 
 def LPIPS(real:np.ndarray, fake:np.ndarray, norm=True):
     """
@@ -90,7 +90,7 @@ def LPIPS(real:np.ndarray, fake:np.ndarray, norm=True):
     fake = fake.astype(np.float32)
     
     if norm:
-        for i in range(n := real.shape[0]):
+        for i in range(real.shape[0]):
             real[i] = np.array(norm_min_max(real[i], norm_type='self')[0]).astype(np.float32)
             fake[i] = np.array(norm_min_max(fake[i], norm_type='self')[0]).astype(np.float32)
     
@@ -100,7 +100,7 @@ def LPIPS(real:np.ndarray, fake:np.ndarray, norm=True):
     print(real_3c.shape, real_3c.dtype)
     
     lpips_score = float(lpips(real_3c, fake_3c))
-    return lpips_score / n
+    return lpips_score
 
 def perceptive_hash(mat1:np.ndarray, mat2:np.ndarray, norm=True):
     """

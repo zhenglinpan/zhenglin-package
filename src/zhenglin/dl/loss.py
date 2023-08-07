@@ -56,8 +56,15 @@ class PerceptualLoss(nn.Module):
             for p in model.parameters():
                 p.requires_grad = False
             model.eval()
+    
+    def to(self, device):
+        super(PerceptualLoss, self).to(device)
+        for model in self.models:
+            model.to(device)
 
-    def foward(self, hr, sr):
+        return self
+
+    def forward(self, hr, sr):
         """
             :hr: high resolution image, torchsize([n, c, h, w])
             :sr: super resolution image, torchsize([n, c, h, w])

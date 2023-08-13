@@ -8,13 +8,13 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from torchvision.utils import save_image
 import torchvision.transforms as transforms
+from torch2trt import TRTModule
 
 from PIL import Image
 import numpy as np
 
 from network import Generator
 from dataset import MyDataset
-from utils import weights_init_normal, LambdaLR
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--start_epoch', type=int, default=0, help='starting epoch')
@@ -35,22 +35,14 @@ print(args)
 DEVICE = 0
 
 # Networks
-model = Generator().to(DEVICE)
+model_trt = TRTModule()
+model_trt.load_state_dict(torch.load('./models/model_20.trt', map_location=torch.device(DEVICE)))
 
-if args.resume:
-    model.load_state_dict(torch.load('./models/model_20.pth', map_location=DEVICE))
-
-# if rich
-# model = nn.DataParallel(model, device_ids=[0, 1])
-
-model.eval()
+model_trt.eval()
 
 # Inputs & targets memory allocation
 Tensor = torch.cuda.FloatTensor if args.cuda else torch.Tensor
 input_A = Tensor(args.batch_size, args.input_nc, args.size, args.size)
-input_B = Tensor(args.batch_size, args.output_nc, args.size, args.size)
-target_real = Variable(Tensor(args.batch_size).fill_(1.0), requires_grad=False)
-target_fake = Variable(Tensor(args.batch_size).fill_(0.0), requires_grad=False)
 
 # Dataset loader
 transforms_ = [ transforms.Resize(int(args.size*1.12), Image.BICUBIC), 
@@ -61,12 +53,12 @@ transforms_ = [ transforms.Resize(int(args.size*1.12), Image.BICUBIC),
 dataset = MyDataset(args.dataroot, transforms_=transforms_, unaligned=True)
 dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
 
-###### Testing ######
+###### infer ######
 for epoch in range(args.start_epoch, args.end_epoch + 1):
     for i, batch in enumerate(dataloader):
         
         Input = Variable(input_A.copy_(batch))
-        Pred = model(Input)
+        Pred = model_trt(Input)
 
         save_image(Input, f'./imgs/{np.random.random()}_real.jpg')
         save_image(Pred, f'./imgs/{np.random.random()}_fake.jpg')

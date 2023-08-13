@@ -1,9 +1,14 @@
+"""
+With Automatic Mixed precision (AMP) training, you can enable mixed precision.
+"""
+
 import os, sys
 import argparse
 import itertools
 
 import torch
 import torch.nn as nn
+from torch.cuda.amp import GradScaler, autocast #<<< new
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from torchvision.utils import save_image
@@ -33,7 +38,6 @@ parser.add_argument('--batch_size', type=int, default=1, help='size of the batch
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--resume', action="store_true", help='continue training from a checkpoint')
 ### advanced args
-parser.add_argument('--precision', type=str, default='fp32', choices=['fp32', 'fp16'], help='precision of model')
 args = parser.parse_args()
 
 ### set gpu device
@@ -41,8 +45,6 @@ DEVICE = 0
 
 ### Networks
 model = Generator().to(DEVICE)
-if args.precision == 'fp16':
-    model = Generator().half().to(DEVICE)
 model.apply(weights_init_normal)
 
 if args.resume:
@@ -56,8 +58,10 @@ criterion_GAN = torch.nn.MSELoss().to(DEVICE)
 
 ### argsimizers & LR schedulers
 optimizer_G = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999))
-
 lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LinearLambdaLR(args.start_epoch, args.end_epoch, args.decay_epoch).step)
+
+grad_scaler = GradScaler() #<<< new
+
 
 ### Inputs & targets memory allocation
 Tensor = torch.cuda.FloatTensor if args.precision=='fp32' else torch.cuda.HalfTensor
@@ -82,15 +86,17 @@ for epoch in range(args.start_epoch, args.end_epoch + 1):
         # Input = Variable(input_A.copy_(batch))    ### style 1
         Input = Variable(batch.type(Tensor)).to(DEVICE)   ### style 2
 
-        ###### Generators A2B and B2A ######
+        ###### Generator ######
         optimizer_G.zero_grad()
+        with autocast():
         
-        Pred = model(Input)
-        
-        loss_G = criterion_GAN(Input, Pred)
+            Pred = model(Input)
+            
+            loss_G = criterion_GAN(Input, Pred)
 
-        loss_G.backward()
-        optimizer_G.step()
+        grad_scaler.scale(loss_G).backward
+        grad_scaler.step(optimizer_G)
+        grad_scaler.update
         
         wandb.log({"loss_G": loss_G.item()})
         

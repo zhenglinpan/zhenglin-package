@@ -1,6 +1,6 @@
 # pip install zhenglin
 *@ Author: zhenglin*
-*@version: 0.16.13*
+*@version: 1.18.14*
 
 This package contains some off-the-shelves deep-learning networks implemented with [![](https://img.shields.io/badge/Pytorch-ee4c2c?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/).
 
@@ -30,9 +30,13 @@ which includes(from a to z)
 - ResNet
 - [Restormer](https://github.com/leftthomas/Restormer)
 - RRDBNet
+- [SqueezeNet](https://github.com/gsp-27/pytorch_Squeezenet/tree/master)
 - [SRDRM](https://github.com/xahidbuffon/SRDRM/tree/master)
 - SRGAN
 - [SWinIR](https://github.com/JingyunLiang/SwinIR)
 - U2Net
 - UNet
+- [Attention-UNet](https://github.com/Andy-zhujunwen/UNET-ZOO/blob/master)
 
+## News and Updates
++ Aug 13 2021: `Version: 1.18.15` Add basic quantization support.

@@ -15,12 +15,14 @@ import itertools
 
 # torch packages
 import torch
+import torch.onnx
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from torch.autograd import Variable
 from torchvision.transforms import transforms
 from torchvision.utils import save_image
+from torch.cuda.amp import GradScaler, autocast
 
 # dl ml packages
 import cv2
@@ -33,6 +35,7 @@ import scipy as sp
 import skimage
 import sklearn
 from PIL import Image
+import albumentations
 
 # universal packages
 import math as m
@@ -47,3 +50,10 @@ import typing
 import json
 import yaml
 import re
+
+# quantization packages
+# import onnx
+# import torch2trt
+# from torch2trt import TRTModule
+# import pycuda.driver as cuda
+# import pycuda.autoinit

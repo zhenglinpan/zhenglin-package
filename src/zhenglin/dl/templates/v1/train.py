@@ -33,7 +33,7 @@ parser.add_argument('--batch_size', type=int, default=1, help='size of the batch
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--resume', action="store_true", help='continue training from a checkpoint')
 ### advanced args
-parser.add_argument('--precision', type=str, default='fp32', choices=['fp32', 'fp16'], help='precision of model')
+parser.add_argument('--precision', type=str, default='fp32', choices=['fp32', 'fp16'], help='brutal precision of model')
 args = parser.parse_args()
 
 ### set gpu device
@@ -41,7 +41,7 @@ DEVICE = 0
 
 ### Networks
 model = Generator().to(DEVICE)
-if args.precision == 'fp16':
+if args.precision == 'fp16':    # Not encouraged. AMP is preferred, refer to ./train_amp.py
     model = Generator().half().to(DEVICE)  # TODO:Set data to .half() as well
 model.apply(weights_init_normal)
 
@@ -57,7 +57,7 @@ criterion_GAN = torch.nn.MSELoss().to(DEVICE)
 ### argsimizers & LR schedulers
 optimizer_G = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
-lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LinearLambdaLR(args.start_epoch, args.end_epoch, args.decay_epoch).step)
+lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LinearLambdaLR(args.end_epoch, args.start_epoch, args.decay_epoch).step)
 
 ### Inputs & targets memory allocation
 Tensor = torch.cuda.FloatTensor if args.precision=='fp32' else torch.cuda.HalfTensor

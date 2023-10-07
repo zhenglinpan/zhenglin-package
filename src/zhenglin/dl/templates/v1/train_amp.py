@@ -1,5 +1,6 @@
 """
 With Automatic Mixed precision (AMP) training, you can enable mixed precision.
+See https://pytorch.org/docs/stable/notes/amp_examples.html#amp-examples for official examples.
 """
 
 import os, sys
@@ -58,9 +59,9 @@ criterion_GAN = torch.nn.MSELoss().to(DEVICE)
 
 ### argsimizers & LR schedulers
 optimizer_G = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999))
-lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LinearLambdaLR(args.start_epoch, args.end_epoch, args.decay_epoch).step)
+lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LinearLambdaLR(args.end_epoch, args.start_epoch, args.decay_epoch).step)
 
-grad_scaler = GradScaler() #<<< new
+grad_scaler = GradScaler()              #<<< new
 
 
 ### Inputs & targets memory allocation
@@ -88,15 +89,15 @@ for epoch in range(args.start_epoch, args.end_epoch + 1):
 
         ###### Generator ######
         optimizer_G.zero_grad()
-        with autocast():
+        with autocast():                    #<<< new
         
             Pred = model(Input)
             
             loss_G = criterion_GAN(Input, Pred)
 
-        grad_scaler.scale(loss_G).backward
-        grad_scaler.step(optimizer_G)
-        grad_scaler.update
+        grad_scaler.scale(loss_G).backward  #<<< new
+        grad_scaler.step(optimizer_G)       #<<< new
+        grad_scaler.update                  #<<< new
         
         wandb.log({"loss_G": loss_G.item()})
         

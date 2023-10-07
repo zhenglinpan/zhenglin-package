@@ -41,17 +41,16 @@ def PSNR(original:np.ndarray, generated:np.ndarray, norm=False, aclr_factor=1):
 def SSIM(mat1:np.ndarray, mat2:np.ndarray, norm=True):
     """
         :mat1, mat2 paras: np.ndarray, shape=(ch, h, w)
-        :norm_type para: 'self' or 'cross'. If 'self' is used, will be insensitive to pixel value range.
-                        if 'cross' is used, mat1 should be the higher one in terms of pixel value range.
+        :norm para: whether to normalize the input matrix to [0, 255]
     """
     assert len(mat1.shape) == len(mat2.shape) == 3
     
     if norm:
         mat1 = np.array(norm_min_max(mat1, norm_type='self')[0]*255).astype(np.uint8)
         mat2 = np.array(norm_min_max(mat2, norm_type='self')[0]*255).astype(np.uint8)
-    
-    mat1 = mat1.astype(np.uint8)
-    mat2 = mat2.astype(np.uint8)
+    else:
+        mat1 = mat1.astype(np.uint8)
+        mat2 = mat2.astype(np.uint8)
     
     ssim = 0
     for c in range(ch := mat1.shape[0]):
@@ -104,8 +103,7 @@ def LPIPS(real:np.ndarray, fake:np.ndarray, norm=True):
 
 def perceptive_hash(mat1:np.ndarray, mat2:np.ndarray, norm=True):
     """
-        :norm_type para: 'self' or 'cross'. If 'self' is used, will be insensitive to pixel value range.
-                        if 'cross' is used, mat1 should be the higher one in terms of pixel value range.
+        :norm para: whether to normalize the input matrix to [0, 255]
     """
     assert mat1.shape == mat2.shape
     assert len(mat1.shape) == 3

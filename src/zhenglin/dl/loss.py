@@ -29,9 +29,12 @@ class MeanShift(nn.Conv2d):
 class PerceptualLoss(nn.Module):
     def __init__(self, criterion='l1', model_type='vgg19', rgb_range=1):
         """
+            See https://github.com/Xinzhe99/Perceptual-Loss-for-pytorch/blob/main/main.py
+            for alternative implementation with Perception loss on multiple layers: 
+             
             :criterion: loss function, 'l1' or 'l2'
-            :model_type: 'vgg19' or 'resnet50' or 'mix'(ESRGAN-DP)
-            :rgb_range: MAKE SURE INPUT RANGE IS [0, 1]
+            :model_type: 'vgg16', 'vgg19' or 'resnet50' or 'mix'
+            :rgb_range: MAKE SURE INPUT RANGE IS BETWEEN [0, 1]
         """
         super(PerceptualLoss, self).__init__()
         self.criterion = criterion
@@ -39,11 +42,13 @@ class PerceptualLoss(nn.Module):
         self.sub_mean = MeanShift(rgb_range, (0.2, 0.2, 0.2), (0.157 * rgb_range, 0.157 * rgb_range, 0.157 * rgb_range))
         
         models = []
-        if model_type == 'vgg19':
+        if model_type == 'vgg16':
+            models += [torchvision.models.vgg16(weights='DEFAULT')]
+        elif model_type == 'vgg19':
             models += [torchvision.models.vgg19(weights='DEFAULT')]
         elif model_type == 'resnet50':
             models += [torchvision.models.resnet50(weights='DEFAULT')]
-        elif model_type == 'mix':    # as per paper "ESRGAN-DP"
+        elif model_type == 'mix':    # as per paper "Song et al. Dual Perceptual Loss for Single Image Super-Resolution Using ESRGAN"
             models += [torchvision.models.vgg19(weights='DEFAULT'),
                        torchvision.models.resnet50(weights='DEFAULT')]
         else:
@@ -69,7 +74,9 @@ class PerceptualLoss(nn.Module):
             :hr: high resolution image, torchsize([n, c, h, w])
             :sr: super resolution image, torchsize([n, c, h, w])
         """
-        if self.model_type == 'vgg19':
+        if self.model_type == 'vgg16':
+            loss = self.loss(self.models[0], 'vgg16', hr, sr)
+        elif self.model_type == 'vgg19':
             loss = self.loss(self.models[0], 'vgg19', hr, sr)
         elif self.model_type == 'resnet50':
             loss = self.loss(self.models[0], 'resnet50', hr, sr)
@@ -81,6 +88,10 @@ class PerceptualLoss(nn.Module):
         return loss
         
     def loss(self, model, model_type, hr, sr):
+        if model_type == 'vgg16':  
+            model_feature = model.features
+            modules = [m for m in model_feature]
+            model = nn.Sequential(*modules[:22])
         if model_type == 'vgg19':
             model_feature = model.features
             modules = [m for m in model_feature]
@@ -92,20 +103,21 @@ class PerceptualLoss(nn.Module):
         if sr.shape[1] == 1:
             sr = torch.cat([sr, sr, sr], axis=1)
             hr = torch.cat([hr, hr, hr], axis=1)           
-            # self.sub_mean(x)  ### not sure if this is needed
+            # self.sub_mean(x)  ### not sure if needed
 
-        fm_sr = model(sr)
+        f_sr = model(sr)
         with torch.no_grad():
-            fm_hr = model(hr)
+            f_hr = model(hr)
             
         if self.criterion.lower() == 'l1':
-            loss = F.l1_loss(fm_sr, fm_hr)
+            loss = F.l1_loss(f_hr, f_sr)
         elif self.criterion.lower() == 'l2' or self.criterion.lower() == 'mse':
-            loss = F.mse_loss(fm_sr, fm_hr)
+            loss = F.mse_loss(f_hr, f_sr)
         else:
             raise NotImplementedError('Loss type {} is not implemented'.format(self.criterion))
         
         return loss
+
     
 class ContrastiveLoss(nn.Module):
     """

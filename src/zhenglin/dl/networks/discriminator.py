@@ -1,3 +1,7 @@
+"""
+There are some other discriminators in ./deblurgan.py might be useful
+"""
+
 import numpy as np
 import torch.nn as nn
 

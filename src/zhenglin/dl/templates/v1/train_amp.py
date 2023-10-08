@@ -6,6 +6,7 @@ See https://pytorch.org/docs/stable/notes/amp_examples.html#amp-examples for off
 import os, sys
 import argparse
 import itertools
+from tqdm import tqdm
 
 import torch
 import torch.nn as nn
@@ -65,23 +66,24 @@ grad_scaler = GradScaler()              #<<< new
 
 
 ### Inputs & targets memory allocation
-Tensor = torch.cuda.FloatTensor if args.precision=='fp32' else torch.cuda.HalfTensor
-input_A = Tensor(args.batch_size, args.input_nc, args.size, args.size)
-input_B = Tensor(args.batch_size, args.output_nc, args.size, args.size)
+Tensor = torch.cuda.FloatTensor
+input_A = Tensor(args.batch_size, args.input_nc, args.patch_size, args.patch_size)
+input_B = Tensor(args.batch_size, args.output_nc, args.patch_size, args.patch_size)
 target_real = Variable(Tensor(args.batch_size).fill_(1.0), requires_grad=False)
 target_fake = Variable(Tensor(args.batch_size).fill_(0.0), requires_grad=False)
 
 ### Dataset loader
-transforms_ = [ transforms.Resize(int(args.size*1.12), Image.BICUBIC), 
-                transforms.RandomCrop(args.size), 
+transforms_ = transforms.Compose([
+                transforms.Resize(int(args.patch_size*1.12), Image.Resampling.BICUBIC), 
+                transforms.RandomCrop(args.patch_size), 
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ]
+                transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ])
 dataset = MyDataset(args.dataroot, transforms_=transforms_, unaligned=True)
-dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
+dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
 ###### Training ######
-for epoch in range(args.start_epoch, args.end_epoch + 1):
+for epoch in tqdm(range(args.start_epoch, args.end_epoch + 1)):
     for i, batch in enumerate(dataloader):
 
         # Input = Variable(input_A.copy_(batch))    ### style 1
@@ -95,11 +97,11 @@ for epoch in range(args.start_epoch, args.end_epoch + 1):
             
             loss_G = criterion_GAN(Input, Pred)
 
-        grad_scaler.scale(loss_G).backward  #<<< new
-        grad_scaler.step(optimizer_G)       #<<< new
-        grad_scaler.update                  #<<< new
+        grad_scaler.scale(loss_G).backward()      #<<< new
+        grad_scaler.step(optimizer_G)             #<<< new
+        grad_scaler.update()                      #<<< new
         
-        wandb.log({"loss_G": loss_G.item()})
+        # wandb.log({"loss_G": loss_G.item()})
         
     # Update learning rates
     lr_scheduler_G.step()

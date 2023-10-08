@@ -57,11 +57,11 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10):
+    def __init__(self, block, num_blocks, chan_in=3, chan_out=3):
         super(ResNet, self).__init__()
         self.in_planes = 64
 
-        self.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False)   # HACK: 1 channel
+        self.conv1 = nn.Conv2d(chan_in, 64, kernel_size=3, stride=1, padding=1, bias=False)   # HACK: 1 channel
         self.bn1 = nn.BatchNorm2d(64)
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=1)
@@ -69,7 +69,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=1)
         self.layer_out = nn.Sequential(nn.Conv2d(512, 256, 3, 1, 1),
                                        nn.LeakyReLU(0.2, inplace=True),
-                                       nn.Conv2d(256, 128, 1, 1, 1),
+                                       nn.Conv2d(256, chan_out, 1, 1, 1),
                                        )
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -90,27 +90,21 @@ class ResNet(nn.Module):
         return out
 
 
-def ResNet18(classes=10):
-    return ResNet(ResBlock, [2, 2, 2, 2], num_classes = classes)
+def ResNet18(chan_in=3, chan_out=3):
+    return ResNet(ResBlock, [2, 2, 2, 2], chan_in, chan_out)
 
 
-def ResNet34():
-    return ResNet(ResBlock, [3, 4, 6, 3])
+def ResNet34(chan_in=3, chan_out=3):
+    return ResNet(ResBlock, [3, 4, 6, 3], chan_in, chan_out)
 
 
-def ResNet50():
-    return ResNet(Bottleneck, [3, 4, 6, 3])
+def ResNet50(chan_in=3, chan_out=3):
+    return ResNet(Bottleneck, [3, 4, 6, 3], chan_in, chan_out)
 
 
-def ResNet101():
-    return ResNet(Bottleneck, [3, 4, 23, 3])
+def ResNet101(chan_in=3, chan_out=3):
+    return ResNet(Bottleneck, [3, 4, 23, 3], chan_in, chan_out)
 
 
-def ResNet152():
-    return ResNet(Bottleneck, [3, 8, 36, 3])
-
-
-def test():
-    net = ResNet18()
-    y = net(torch.randn(1, 3, 32, 32))
-    print(y.size())
+def ResNet152(chan_in=3, chan_out=3):
+    return ResNet(Bottleneck, [3, 8, 36, 3], chan_in, chan_out)

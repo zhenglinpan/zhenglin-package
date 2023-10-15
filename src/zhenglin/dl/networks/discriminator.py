@@ -4,6 +4,7 @@ There are some other discriminators in ./deblurgan.py might be useful
 
 import numpy as np
 import torch.nn as nn
+from deblurgan import NLayerDiscriminator
 
 class Discriminator(nn.Module):
     def __init__(self, channels, patch_scale=1):

@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import functools
 from torchvision import models
 
-CONV3_3_IN_VGG_19 = models.vgg19(pretrained=True).features[:15].cuda()
+CONV3_3_IN_VGG_19 = models.vgg19(weights=models.VGG19_Weights.DEFAULT).features[:15].cuda()
 
 
 def get_norm_layer(norm_type='instance'):
@@ -173,8 +173,7 @@ class ResNetGenerator(nn.Module):
 class NLayerDiscriminator(nn.Module):
     """Define a PatchGAN discriminator"""
 
-    def __init__(self, input_nc, ndf=64, n_layers=3, norm_type='instance', use_sigmoid=False,
-                 use_minibatch_discrimination=False):
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_type='instance', use_sigmoid=False, use_minibatch_discrimination=False):
         super(NLayerDiscriminator, self).__init__()
 
         self.use_minibatch_discrimination = use_minibatch_discrimination
@@ -197,8 +196,7 @@ class NLayerDiscriminator(nn.Module):
             nf_mult_prev = nf_mult
             nf_mult = min(2 ** n, 8)
             sequence += [
-                nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kernel_size, stride=1, padding=padding,
-                          bias=use_bias),
+                nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kernel_size, stride=1, padding=padding, bias=use_bias),
                 norm_layer(ndf * nf_mult),
                 nn.LeakyReLU(0.2, True)
             ]
@@ -206,8 +204,7 @@ class NLayerDiscriminator(nn.Module):
         nf_mult_prev = nf_mult
         nf_mult = min(2 ** n_layers, 8)
         sequence += [
-            nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kernel_size, stride=1, padding=padding,
-                      bias=use_bias),
+            nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kernel_size, stride=1, padding=padding, bias=use_bias),
             norm_layer(ndf * nf_mult),
             nn.LeakyReLU(0.2, True)
         ]

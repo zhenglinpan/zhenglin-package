@@ -1,6 +1,7 @@
 """ 
 Full assembly of the parts to form the complete network
 An implementation from https://github.com/milesial/Pytorch-UNet
+This UNet was modified for generative task
 """
 
 import torch
@@ -8,13 +9,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=False):
+    def __init__(self, chan_in, chan_out, bilinear=False):
         super(UNet, self).__init__()
-        self.n_channels = n_channels
-        self.n_classes = n_classes
         self.bilinear = bilinear
 
-        self.inc = (DoubleConv(n_channels, 64))
+        self.inc = (DoubleConv(chan_in, 64))
         self.down1 = (Down(64, 128))
         self.down2 = (Down(128, 256))
         self.down3 = (Down(256, 512))
@@ -24,8 +23,8 @@ class UNet(nn.Module):
         self.up2 = (Up(512, 256 // factor, bilinear))
         self.up3 = (Up(256, 128 // factor, bilinear))
         self.up4 = (Up(128, 64, bilinear))
-        self.outc = (OutConv(64, n_classes))
-
+        self.outc = (OutConv(64, chan_out))
+        
     def forward(self, x):
         x1 = self.inc(x)
         x2 = self.down1(x1)

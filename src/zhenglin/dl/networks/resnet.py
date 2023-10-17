@@ -29,7 +29,7 @@ class ResBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    expansion = 4
+    expansion = 1   # 4  # BUG: when expansion is larger than 1
 
     def __init__(self, in_planes, planes, stride=1):
         super(Bottleneck, self).__init__()

@@ -212,3 +212,54 @@ class OnlineTripletLoss(nn.Module):
         losses = F.relu(ap_distances - an_distances + self.margin)
 
         return losses.mean(), len(triplets)
+
+
+class IoULoss(nn.Module):
+    """ Calculate Intersection over Union (IoU) loss between predicted and true masks.
+        
+        Args:
+        - mask_pred (torch.Tensor): Predicted masks, shape: (N, 1, H, W), range [0, 1].
+        - mask_true (torch.Tensor): True masks, shape: (N, 1, H, W), range [0, 1].
+        
+    """
+    def __init__(self, smooth=1e-6):
+        super(IoULoss, self).__init__()
+        self.smooth = smooth
+        
+    def forward(self, target:torch.Tensor, pred:torch.Tensor):
+        assert target.shape == pred.shape, \
+        f'target and pred must have the same shape, got target {target.shape} and pred {pred.shape}'
+        
+        pred = pred.view(-1)
+        target = target.view(-1)
+        
+        intersection = (pred * target).sum()
+        union = pred.sum() + target.sum() - intersection + self.smooth
+        
+        return 1 - (intersection / union)
+
+
+class DiceLoss(nn.Module):
+    """ Calculate Dice Loss.
+        
+        Args:
+        - mask_pred (torch.Tensor): Predicted masks, shape (N, 1, H, W), range [0, 1].
+        - mask_true (torch.Tensor): True masks, shape (N, 1, H, W), range [0, 1].
+        
+    """
+    def __init__(self, smooth=1.):
+        super(DiceLoss, self).__init__()
+        self.smooth = smooth
+    
+    def forward(self, target:torch.Tensor, pred:torch.Tensor):
+        assert target.shape == pred.shape, \
+        f'target and pred must have the same shape, got target {target.shape} and pred {pred.shape}'
+        
+        pred = pred.contiguous()
+        target = target.contiguous()
+        
+        intersection = (pred * target).sum(dim=(2, 3))
+        dice = (2. * intersection + self.smooth) / (pred.sum(dim=(2, 3)) + target.sum(dim=(2, 3)) + self.smooth)
+        dice = dice.mean()
+        
+        return 1 - dice

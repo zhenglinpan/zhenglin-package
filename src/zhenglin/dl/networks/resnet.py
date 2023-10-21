@@ -69,7 +69,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=1)
         self.layer_out = nn.Sequential(nn.Conv2d(512, 256, 3, 1, 1),
                                        nn.LeakyReLU(0.2, inplace=True),
-                                       nn.Conv2d(256, chan_out, 1, 1, 1),
+                                       nn.Conv2d(256, chan_out, 3, 1, 1),
                                        )
 
     def _make_layer(self, block, planes, num_blocks, stride):

@@ -14,7 +14,7 @@ from PIL import Image
 
 from network import Generator
 from dataset import MyDataset
-from utils import weights_init_normal, LinearLambdaLR
+from zhenglin.dl.utils import weights_init_normal, LinearLambdaLR
 
 import wandb
 # wandb.init("")

@@ -6,6 +6,8 @@ Instrustion on running the script:
 1. Download the dataset from the provided link
 2. Save the folder 'img_align_celeba' to '../../data/'
 4. Run the sript using command 'python3 esrgan.py'
+
+Alternative Inference https://github.com/wonbeomjang/ESRGAN-pytorch/blob/master/src/train.py
 """
 
 import argparse
@@ -181,7 +183,7 @@ for epoch in tqdm(range(args.epoch, args.n_epochs + 1)):
 
         # Content loss
         gen_features = feature_extractor(gen_hr)
-        real_features = feature_extractor(img_hr).detach()
+        real_features = feature_extractor(img_hr)
         loss_content = criterion_content(gen_features, real_features)
 
         # print('gen_hr', pred_fake.shape)

@@ -263,3 +263,22 @@ class DiceLoss(nn.Module):
         dice = dice.mean()
         
         return 1 - dice
+
+
+class PrecisionLoss(nn.Module):
+    def __init__(self, epsilon=1e-6):
+        super().__init__()
+        self.epsilon = epsilon
+    
+    def forward(self, target:torch.Tensor, pred:torch.Tensor):
+        assert target.shape == pred.shape, \
+        f'target and pred must have the same shape, got target {target.shape} and pred {pred.shape}'
+        
+        pred = pred.contiguous().view(-1)
+        target = target.contiguous().view(-1)
+        
+        tp = (pred * target).sum()
+        fp = (pred * (1 - target)).sum()
+        pre = tp / (tp + fp + self.epsilon)
+        
+        return 1 - pre

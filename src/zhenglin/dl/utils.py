@@ -116,3 +116,22 @@ def center_crop(mat: np.ndarray, size):
         return mat[:, x - r: x + r, y - r: y + r]
     else:
         raise Exception("Unsupported shape")
+
+
+def receptive_field(k, s, d):
+    """
+    Calculate the receptive field of a network
+    :param k: kernel size, [9, 3, 3, 7, 3, 3, 5, 3, 3, 3]
+    :param s: stride, [1, 1, 2, 1, 1, 2, 1, 1, 1, 1]
+    :param d: dilation, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    
+    Reference: https://zhuanlan.zhihu.com/p/113285797
+    """
+    reg = 0    # register, i.e. rf_i-1
+    for i in range(len(k)):
+        s_i = np.prod(s[:i+1])
+        k_i = k[i] + (k[i] - 1)*(d[i] - 1)
+        rf_i = reg + (k_i - 1) * s_i    # rf_i+1 = reg + (k_i - 1) * s_i
+        reg = rf_i 
+        
+    print(rf_i)

@@ -7,11 +7,11 @@ from torch.nn import functional as F
 from torch.nn import Upsample
 
 class GeneratorRRDB(nn.Module):
-    def __init__(self, channels, filters=64, num_res_blocks=16, num_upsample=2):
+    def __init__(self, chan_in=3, chan_out=3, filters=64, num_res_blocks=16, num_upsample=2):
         super(GeneratorRRDB, self).__init__()
 
         # First layer
-        self.conv1 = nn.Conv2d(channels, filters, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(chan_in, filters, kernel_size=3, stride=1, padding=1)
         # Residual blocks
         self.res_blocks = nn.Sequential(*[ResidualInResidualDenseBlock(filters) for _ in range(num_res_blocks)])
         # Second conv layer post residual blocks
@@ -31,7 +31,7 @@ class GeneratorRRDB(nn.Module):
         self.conv3 = nn.Sequential(
             nn.Conv2d(filters, filters, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(),
-            nn.Conv2d(filters, channels, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(filters, chan_out, kernel_size=3, stride=1, padding=1),
         )
 
     def forward(self, x):

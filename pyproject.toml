@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "zhenglin"
-version = "1.20.19"
+version = "1.20.20"
 # version = "main_function.networks_numbers.modification_numbers"
 authors = [
   { name="Zhenglin", email="aidenhpan@gmail.com" },

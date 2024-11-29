@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 import datetime
 from tqdm import tqdm
@@ -7,6 +8,7 @@ from omegaconf import OmegaConf
 import torch
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image, make_grid
+from pytorch_lightning import seed_everything
 
 from safetensors.torch import load_file
 from accelerate import Accelerator
@@ -18,15 +20,19 @@ accelerator.init_trackers(project_name="accelerate-template")
 # ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
 # accelerator = Accelerator(kwargs_handlers=[ddp_kwargs], log_with="wandb")
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from dataset import MNIST
 from networks.unet import UNet
-from zhenglin.dl.utils import LinearLambdaLR
+from tools.utils import LinearLambdaLR
 
 logging.basicConfig(level=logging.INFO)
 
 
 def main():
     config = OmegaConf.load('config.yaml')
+    
+    seed_everything(config['seed'])
     
     ### save checkpoints
     if config.exp_name:
@@ -86,12 +92,14 @@ def main():
         if epoch % config.save_interval_epoch == 0 or epoch == config.end_epoch - 1:
             if accelerator.is_local_main_process:
                 os.makedirs(os.path.join(dir_save, 'imgs'), exist_ok=True)
-                save_image(make_grid(pred, nrow=int(config.batch_size ** 0.5)), os.path.join(dir_save, 'imgs', f'{epoch}_pred.jpg'))
-                save_image(make_grid(image, nrow=int(config.batch_size ** 0.5)), os.path.join(dir_save, 'imgs', f'{epoch}_gt.jpg'))
-                save_image(make_grid(contour, nrow=int(config.batch_size ** 0.5)), os.path.join(dir_save, 'imgs', f'{epoch}_cond.jpg'))
+                save_image(make_grid(pred, nrow=int(config.batch_size ** 0.5)), os.path.join(dir_save, 'imgs', f'{epoch}_pred.png'))
+                save_image(make_grid(image, nrow=int(config.batch_size ** 0.5)), os.path.join(dir_save, 'imgs', f'{epoch}_gt.png'))
+                save_image(make_grid(contour, nrow=int(config.batch_size ** 0.5)), os.path.join(dir_save, 'imgs', f'{epoch}_cond.png'))
             
                 os.makedirs(os.path.join(dir_save, 'weights', f'epoch_{epoch}'), exist_ok=True)
                 accelerator.save_state(os.path.join(dir_save, 'weights', f'epoch_{epoch}'))
+                logging.info(f"Epoch {epoch} is saved to {os.path.join(dir_save, 'weights', f'epoch_{epoch}')}")
+                
         
     
 if __name__ == '__main__':

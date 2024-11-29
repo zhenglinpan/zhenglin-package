@@ -1,6 +1,6 @@
 # pip install zhenglin
 *@ Author: zhenglin*
-*@version: 1.20.19*
+*@version: 1.21*
 
 This package contains some off-the-shelves deep-learning networks implemented with [![](https://img.shields.io/badge/Pytorch-ee4c2c?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/).
 
@@ -11,21 +11,30 @@ pip install zhenglin
 
 to install this package.
 
-## News and Updates
-+ Aug 13 2023: `Version: 1.18.15` Add basic quantization support.
+## Updates
++ Nov 13 2024: `Version: 1.21`. Package overhaul. Add `huggingface accelerate`, `pytorch-lightning`, and `pytorch-ddp` support.
 + Oct 26 2023: `Version: 1.20.19` Add `TransUNet` and `SwinUNet`
++ Aug 13 2023: `Version: 1.18.15` Add basic quantization support.
+
 
 ## Introduction
 
-[zhenglin](https://pypi.org/project/zhenglin/) package is mainly motivated by eriklindernoren and his [repo](https://github.com/eriklindernoren/PyTorch-GAN) which provides many **super clean and easy-to-read** implementation of GAN variants. It is friendly to beginners and also a good reference for advanced users, especially for DL developpers.
+[zhenglin](https://pypi.org/project/zhenglin/) package was motivated by eriklindernoren and his [repo](https://github.com/eriklindernoren/PyTorch-GAN) which provides many **grab-and-run** implementation of DL variants. It is the level ground for zhenglin's deep learning projects.
 
 Specifically, this package provides
-+ A universal structure under `zhenglin.dl.template.v1.*`
-+ Loss functions under `zhenglin.dl.losses`
-+ Metrics under `zhenglin.dl.metrics`
-+ Utils under `zhenglin.dl.utils`
-+ 20 highly modular and easy-to-use implementation of deep-learning networks under `zhenglin.dl.networks.*`
-which includes(from a to z)
++ universal structure-template:
+    - `zhenglin.accelerate.train`
+    - `zhenglin.lightning.train`
+    - `zhenglin.pytorch.train`
++ loss functions and metrics
+    - `zhenglin.tools.loss`
+    - `zhenglin.tools.metrics`
++ utils
+    - `zhenglin.tools.utils`
++ 20 modular deep-learning networks
+    - `zhenglin.networks.*`
+
+### Networks(Alphabetically):
 - [cycleGAN](https://github.com/aitorzip/PyTorch-CycleGAN)
 - [DDPM](https://github.com/dome272/Diffusion-Models-pytorch)
 - [DeblurGAN](https://github.com/fourson/DeblurGAN-pytorch/tree/master)

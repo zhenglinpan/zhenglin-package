@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from torchvision.utils import save_image, make_grid
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from tools.utils import LinearLambdaLR
+from utils.utils import LinearLambdaLR
 
 
 class UNet(nn.Module):

@@ -14,7 +14,7 @@ from dataset import MNIST
 from networks.unet import UNet
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from tools.utils import LinearLambdaLR
+from utils.utils import LinearLambdaLR
 
 import wandb
 wandb.init(project="pytorch-template")

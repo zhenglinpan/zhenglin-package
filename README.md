@@ -27,10 +27,10 @@ Specifically, this package provides
     - `zhenglin.lightning.train`
     - `zhenglin.pytorch.train`
 + loss functions and metrics
-    - `zhenglin.tools.loss`
-    - `zhenglin.tools.metrics`
+    - `zhenglin.utils.loss`
+    - `zhenglin.utils.metrics`
 + utils
-    - `zhenglin.tools.utils`
+    - `zhenglin.utils.utils`
 + 20 modular deep-learning networks
     - `zhenglin.networks.*`
 

@@ -24,7 +24,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dataset import MNIST
 from networks.unet import UNet
-from tools.utils import LinearLambdaLR
+from utils.utils import LinearLambdaLR
 
 logging.basicConfig(level=logging.INFO)
 

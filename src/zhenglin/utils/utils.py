@@ -22,10 +22,28 @@ def summary(model):
 def fix_model(model):
     for param in model.parameters():
         param.requires_grad = False
-
     model.eval()
-    
     return model
+
+
+def save_keys(path_model, path_json_out=None):
+    '''save the keys of a model weight(.pt, ckpt,) file to a json file'''
+    import json
+    from collections import defaultdict
+    weight = torch.load(path_model, map_location='cpu')
+    
+    if 'state_dict' in weight.keys():
+        writebuff = defaultdict(list)
+        for key in weight.keys():
+            for subkey in weight[key].keys():
+                writebuff[key].append(subkey)
+    else:
+        writebuff = {'state_dict': list(weight.keys())}
+            
+    path_json_out = './keys.json' if path_json_out else path_json_out
+    with open(path_json_out, 'w') as f:
+        json.dump(writebuff, f, indent=4)
+    print(f"Keys saved to {path_json_out}")
 
 
 class EasyReplayBuffer:

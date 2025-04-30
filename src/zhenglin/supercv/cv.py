@@ -12,7 +12,7 @@ class cv:
         elif isinstance(data, Image.Image):
             self.data = np.array(data)
         elif isinstance(data, torch.Tensor):
-            self.data = data.squeeze(0).permute(1, 2, 0).numpy()
+            self.data = np.clip((data.squeeze(0).permute(1, 2, 0).numpy() * 255.0), 0, 255).astype(np.uint8)
         else:
             raise TypeError("Unsupported data type.")
 
@@ -34,7 +34,10 @@ class cv:
 
     @staticmethod
     def imwrite(obj, path_out, **kwargs):
-        assert isinstance(obj, (cv, np.ndarray, Image.Image, torch.Tensor)), "Input must be cv object, numpy array, PIL image or torch tensor."
+        assert isinstance(obj, (str, cv, np.ndarray, Image.Image, torch.Tensor)), "Input must be cv object, numpy array, PIL image or torch tensor."
+        if isinstance(obj, str):
+            path_out, obj = obj, path_out
+        
         if isinstance(obj, cv):
             obj = obj.data
 

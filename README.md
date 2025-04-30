@@ -1,6 +1,6 @@
 # pip install zhenglin
 *@ Author: zhenglin*
-*@version: 2.0*
+*@version: 2.1*
 
 This package contains some off-the-shelves deep-learning networks implemented with [![](https://img.shields.io/badge/Pytorch-ee4c2c?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/).
 
@@ -12,6 +12,7 @@ pip install zhenglin
 to install this package.
 
 ## Updates
++ Apr 30 2025: `Version: 2.1`. Add a new class wrapper `vd` class under `supercv`, supports video io now.
 + Apr 18 2025: `Version: 2.0`. Add init version of `supercv(cv)` class, a universal wrapper for cv2, PIL.Image and Torch.tensor.
 + Nov 13 2024: `Version: 1.21`. Package overhaul. Add `huggingface accelerate`, `pytorch-lightning`, and `pytorch-ddp` support.
 + Oct 26 2023: `Version: 1.20.19` Add `TransUNet` and `SwinUNet`

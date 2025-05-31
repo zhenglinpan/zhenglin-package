@@ -2,7 +2,7 @@ import os
 import torch
 from typing import List, Union
 
-from cv import cv
+from .cv import cv
 
 class vd:
     def __init__(self, frames: List[cv]):
@@ -27,7 +27,7 @@ class vd:
         return torch.stack(tensors, dim=1)  # shape: [1, T, C, H, W]
 
     @staticmethod
-    def vread(path_in: str, frames: Union[int, List[int]] = None, img_type: str = 'cv2'):
+    def read_video(path_in: str, frames: Union[int, List[int]] = None, img_type: str = 'cv2'):
         from decord import VideoReader, cpu
         
         vr = VideoReader(path_in, ctx=cpu(0))
@@ -52,7 +52,7 @@ class vd:
         return vd(frames_out)
 
     @staticmethod
-    def vwrite(path_out: str, obj, fps=30, serialize=False, **kwargs):
+    def save_video(path_out: str, obj, fps=30, serialize=False, lossless=False, **kwargs):
         import cv2
         
         if isinstance(obj, str):
@@ -78,23 +78,41 @@ class vd:
                 cv.imwrite(frame, out_path)
             return
 
-        h, w = frames[0].shape[:2]
-        if path_out.endswith('mp4'):
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        elif path_out.endswith('webm'):
-            fourcc = cv2.VideoWriter_fourcc(*'vp80')
-        else:
-            raise ValueError(f"Unsupported format: {format}")
+        if lossless:
+            import subprocess
+            import tempfile
 
-        writer = cv2.VideoWriter(path_out, fourcc, fps, (w, h))
-        for frame in frames:
-            writer.write(frame[:, :, ::-1])  # Convert RGB to BGR
-        writer.release()
+            path_out = f'{os.path.splitext(path_out)[0]}.mp4'
+
+            with tempfile.TemporaryDirectory() as temp_folder:
+                for i, frame in enumerate(frames):
+                    cv.imwrite(frame, os.path.join(temp_folder, f"frame_{i:04d}.png"))
+
+                cmd = (
+                    f"ffmpeg -y -framerate {fps} "
+                    f"-i {temp_folder}/frame_%04d.png "
+                    f"-c:v libx264 -preset veryslow -crf 0 "
+                    f"{path_out}"
+                )
+                subprocess.run(cmd, shell=True)
+        else:
+            h, w = frames[0].shape[:2]
+            if path_out.endswith('mp4'):
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            elif path_out.endswith('webm'):
+                fourcc = cv2.VideoWriter_fourcc(*'vp80')
+            else:
+                raise ValueError(f"Unsupported format: {format}")
+
+            writer = cv2.VideoWriter(path_out, fourcc, fps, (w, h))
+            for frame in frames:
+                writer.write(frame[:, :, ::-1])  # Convert RGB to BGR
+            writer.release()
 
 
 if __name__=="__main__":
 
-    vid = vd.vread("video.mp4")      # full video
+    vid = vd.read_video(r"D:\stable-diffusion-webui-master\training-picker\videos\4166-Scene-002.mp4")      # full video
     
     clip1 = vid[0, 2, 4]
     clip2 = vid[:5]
@@ -103,5 +121,5 @@ if __name__=="__main__":
     vid_tensor = vid.tensor
     print(vid_tensor.shape) # torch.Size([1, 21, 3, 720, 1280])
 
-    vd.vwrite('out.mp4', vid_tensor, serialize=False, fps=30)
+    vd.save_video('out.mp4', vid_tensor, serialize=False, fps=30)
     
